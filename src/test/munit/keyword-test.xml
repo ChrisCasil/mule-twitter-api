@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="keyword-test.xml" />
+	<munit:test name="keywordtest" doc:id="655e99ed-b33a-42e8-bb66-fe128226fb10" >
+		<munit:behavior >
+			<munit:set-event doc:name="Set Input" doc:id="fcccbe0b-6992-4c7b-9a91-9bc1bfd9464d" >
+				<munit:payload value="#[output application/json --- readUrl('classpath://keywordtest\set-event_payload.dwl')]" encoding="UTF-8" mediaType="application/json" />
+				<munit:attributes value="#[readUrl('classpath://keywordtest\set-event_attributes.dwl')]" />
+				<munit:variables >
+					<munit:variable key="outboundHeaders" value="#[readUrl('classpath://keywordtest\set-event_variable_.dwl')]" />
+				</munit:variables>
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to get:\keyword:application\json:s37-twitter-api-config" doc:id="10760ad1-2b75-4877-9cd2-03c4fd179908" name="get:\keyword:application\json:s37-twitter-api-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="b06a1f5e-3af3-49e6-81c8-7db66995aac9" is="#[MunitTools::notNullValue()]" message="The payload is null" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>

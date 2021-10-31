@@ -1,0 +1,54 @@
+#%RAML 1.0
+title: s37-twitter-api
+version: v1
+mediaType: application/json
+baseUri: api/v1/s37
+
+traits: 
+  client-id-required: !include securityTraits.raml
+
+/keyword:
+  get:
+    is: [client-id-required]
+    description: To retrieve max 10 tweets that include keyword in last n hours
+    body:
+      application/json:
+        properties:
+          keyword:
+            type: string
+            required: true
+            minLength: 1
+            maxLength: 400
+          hours:
+            type: number
+            required: true
+            multipleOf: 1
+            minimum: 1
+            format: int64
+        example: !include examples/keywordInput.json
+
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include examples/keywordOutput.json
+
+/hashtag:
+    get:
+      is: [client-id-required]
+      description: To retrieve list of unique hashtags used in the top 10 most popular tweets containing keyword
+      body:
+        application/json:
+          properties:
+            keyword:
+              type: string
+              required: true
+              minLength: 1
+              maxLength: 400
+          example: !include examples/hashtagInput.json
+
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include examples/hashtagOutput.json

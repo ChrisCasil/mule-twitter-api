@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	 <flow name="get:\keyword:application\json:s37-twitter-api-config">
+		<logger level="INFO" doc:name="Log: start of keyword flow" doc:id="e7017227-6686-4d5b-93f5-dcd5477aa4c7" message="Log: start of keyword flow" />
+		<ee:transform doc:name="create q and hours variables" doc:id="44c9cccc-8a80-4a51-8a9a-3b83158ec1cf">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="q"><![CDATA[%dw 2.0
+output application/json
+import * from dw::core::URL
+---
+encodeURI(payload.keyword) ++ " AND -filter:retweets AND -filter:replies"]]></ee:set-variable>
+				<ee:set-variable variableName="hours"><![CDATA[%dw 2.0
+output application/json
+---
+(now() - ("PT" ++ payload.hours ++ "h") >> "UTC" replace "Z" with "+0000") as DateTime {format: "yyyy-MM-dd'T'HH:mm:ss.SSSZ"} as String {format: "EEE MMM dd HH:mm:ss Z yyyy"}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="Log hours conversion" doc:id="c17675e8-37f5-4de4-b056-93e46fe43758" message='#["converted hours: " ++ vars.hours]' />
+		<http:request method="GET" doc:name="Call Twitter API" doc:id="c68a5a67-1c7b-4313-9fc2-e198d7784b9e" config-ref="twitter-request" path="${twitter.path}" outputMimeType="application/json">
+			<http:headers><![CDATA[#[{
+	"Authorization" : ${secure::bearer}
+}]]]></http:headers>
+			<http:query-params><![CDATA[#[{
+	"q": vars.q,
+	"count": ${keyword.count},
+	"result_type": ${keyword.result_type}
+}]]]></http:query-params>
+		</http:request>
+		<ee:transform doc:name="Response Message" doc:id="324c9330-95d7-479e-bf1c-b4aac51dc277">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var nHours = vars.hours as DateTime {format: "EEE MMM dd HH:mm:ss Z yyyy"}
+---
+payload.statuses filter $.created_at as DateTime {format: "EEE MMM dd HH:mm:ss Z yyyy"} > nHours map
+{
+	text: $.text,
+	url: "https://twitter.com/" ++ $.user.screen_name ++ "/status/" ++ $.id,
+	screen_name: $.user.screen_name
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Log: end of keyword flow" doc:id="18f6a434-d569-466a-9926-5e24c19e9dd9" message="Log: end of keyword flow #[payload]" />
+		<error-handler ref="global-error-handler" />
+    </flow>
+	<flow name="get:\hashtag:application\json:s37-twitter-api-config">
+<logger level="INFO" doc:name="Log: start of hashtag flow" doc:id="f8cc8579-e5a1-470d-9428-879affd4ee45" message="Log: start of hashtag flow"/>
+		<ee:transform doc:name="create q variable" doc:id="dd1da34c-e6d9-4ad5-8eaf-2c868880e838" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="q" ><![CDATA[%dw 2.0
+output application/json
+import * from dw::core::URL
+---
+encodeURI(payload.keyword) ++ " AND -filter:retweets AND -filter:replies"]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<http:request method="GET" doc:name="Call Twitter API" doc:id="a225a7e1-dd72-4606-9f99-fa884e9e879f" config-ref="twitter-request" path="${twitter.path}" outputMimeType="application/json">
+			<http:headers ><![CDATA[#[{
+	"Authorization" : ${secure::bearer}
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[{
+	"q": vars.q,
+	"count": ${hashtag.count},
+	"result_type": ${hashtag.result_type}
+}]]]></http:query-params>
+		</http:request>
+		<ee:transform doc:name="Response Message" doc:id="f3f785e3-cefd-4abb-9c52-9084d73b9d80" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var hash = flatten(payload.statuses.entities.hashtags).*text distinctBy $
+---
+if(hash == null) [] else hash]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Log: end of hashtag flow" doc:id="a8e4cefc-5d7e-4336-9921-c0b2f132369e" message="Log: end of hashtag flow #[payload]"/>
+		<error-handler ref="global-error-handler" />
+    </flow>
+	
+</mule>

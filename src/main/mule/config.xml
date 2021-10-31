@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+	xmlns:json="http://www.mulesoft.org/schema/mule/json"
+	xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger"
+	xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway"
+	xmlns:module-eventhandler="http://www.mulesoft.org/schema/mule/module-eventhandler"
+	xmlns:tls="http://www.mulesoft.org/schema/mule/tls"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
+http://www.mulesoft.org/schema/mule/module-eventhandler http://www.mulesoft.org/schema/mule/module-eventhandler/current/mule-module-eventhandler.xsd
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd">
+	<apikit:config name="s37-twitter-api-config"
+		api="s37-twitter-api.raml" outboundHeadersMapName="outboundHeaders"
+		httpStatusVarName="httpStatus" />
+	<http:request-config name="twitter-request"
+		doc:name="HTTP Request configuration"
+		doc:id="80974a37-75f6-43f0-9b68-724b97fc0927">
+		<http:request-connection
+			host="${twitter.host}" port="${twitter.port}" protocol="HTTPS" />
+	</http:request-config>
+	<global-property doc:name="Global Property"
+		doc:id="dd311a31-1851-4e01-9268-45541804a8ff" name="environment"
+		value="local" />
+	<global-property doc:name="Global Property"
+		doc:id="ca155f6e-a5b6-4590-97bf-4052108dcbe2" name="mule.key"
+		value="H6KTYLEXWWBTFFRS" />
+	<configuration-properties
+		doc:name="Configuration properties"
+		doc:id="9416a7ec-09ca-4911-aecd-2b25c068ec36"
+		file="properties/api-${environment}.properties" />
+	<secure-properties:config
+		name="Secure_Properties_Config" doc:name="Secure Properties Config"
+		doc:id="a67c281a-757e-4989-89db-9d6d0143f9df"
+		file="properties/secure/api-${environment}.properties"
+		key="${mule.key}" />
+	<http:listener-config name="HTTP_Listener_config"
+		doc:name="HTTP Listener config"
+		doc:id="03631eae-f2f6-49da-a566-2081fcbff76c">
+		<http:listener-connection host="0.0.0.0"
+			port="${cloudhub.http.port}">
+		</http:listener-connection>
+	</http:listener-config>
+	<api-gateway:autodiscovery apiId="${api.id}" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="cdcc8f80-0e11-4ade-9362-89286bfdbbe5" flowRef="s37-twitter-api-main" />
+</mule>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="hashtag-test.xml" />
+	<munit:test name="hashtagtest" doc:id="2d6d4068-010b-4077-9c80-840f6c17ccdd" >
+		<munit:behavior >
+			<munit:set-event doc:name="Set Input" doc:id="a4ae4f8e-265f-4765-856b-040a0686006c" >
+				<munit:payload value="#[output application/json --- readUrl('classpath://hashtagtest\set-event_payload.dwl')]" encoding="UTF-8" mediaType="application/json" />
+				<munit:attributes value="#[readUrl('classpath://hashtagtest\set-event_attributes.dwl')]" />
+				<munit:variables >
+					<munit:variable key="outboundHeaders" value="#[readUrl('classpath://hashtagtest\set-event_variable_.dwl')]" />
+				</munit:variables>
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to get:\hashtag:application\json:s37-twitter-api-config" doc:id="d89fef83-a818-49d3-8838-29e2d131e1fc" name="get:\hashtag:application\json:s37-twitter-api-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="392763e6-2d19-4a9d-a320-16ebf9bcb544" is="#[MunitTools::notNullValue()]" message="The payload is null" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>
